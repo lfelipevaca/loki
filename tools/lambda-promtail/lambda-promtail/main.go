@@ -110,8 +110,9 @@ func checkEventType(ev map[string]interface{}) (interface{}, error) {
 	var s3Event events.S3Event
 	var cwEvent events.CloudwatchLogsEvent
 	var kinesisEvent events.KinesisEvent
+	var aPIGatewayV2HTTPRequest events.APIGatewayV2HTTPRequest
 
-	types := [...]interface{}{&s3Event, &cwEvent, &kinesisEvent}
+	types := [...]interface{}{&s3Event, &cwEvent, &kinesisEvent, &aPIGatewayV2HTTPRequest}
 
 	j, _ := json.Marshal(ev)
 	reader := strings.NewReader(string(j))
@@ -131,23 +132,25 @@ func checkEventType(ev map[string]interface{}) (interface{}, error) {
 	return nil, fmt.Errorf("unknown event type!")
 }
 
-func handler(ctx context.Context, ev map[string]interface{}) error {
+func handler(ctx context.Context, ev map[string]interface{}) (response *string, err error) {
 	event, err := checkEventType(ev)
 	if err != nil {
 		fmt.Printf("invalid event: %s\n", ev)
-		return err
+		return nil, err
 	}
 
 	switch evt := event.(type) {
 	case *events.S3Event:
-		return processS3Event(ctx, evt)
+		return nil, processS3Event(ctx, evt)
 	case *events.CloudwatchLogsEvent:
-		return processCWEvent(ctx, evt)
+		return nil, processCWEvent(ctx, evt)
 	case *events.KinesisEvent:
-		return processKinesisEvent(ctx, evt)
+		return nil, processKinesisEvent(ctx, evt)
+	case *events.APIGatewayV2HTTPRequest:
+		return processKinesisFirehoseHttpEndpointRequest(ctx, evt)
 	}
 
-	return err
+	return nil, err
 }
 
 func main() {

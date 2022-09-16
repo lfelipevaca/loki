@@ -76,3 +76,15 @@ variable "kms_key_arn" {
   description = "kms key arn for encryp env vars."
   default     = ""
 }
+
+variable "create_lambda_function_url" {
+  description = "Controls whether the Lambda Function URL resource should be created, enable this option for this lambda to be reachable from Kinesis Firehose."
+  type        = bool
+  default     = false
+}
+
+variable "firehose_access_key" {
+  description = "Value of the X-Amz-Firehose-Access-Key header, set this variable in order to authenticate the requests from Kinesis Firehose."
+  type        = string
+  default     = ""
+}
